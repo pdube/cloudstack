@@ -17,7 +17,6 @@
 package org.apache.cloudstack.api.command.user.affinitygroup;
 
 import org.apache.log4j.Logger;
-
 import org.apache.cloudstack.affinity.AffinityGroup;
 import org.apache.cloudstack.affinity.AffinityGroupResponse;
 import org.apache.cloudstack.api.APICommand;
@@ -33,6 +32,7 @@ import org.apache.cloudstack.context.CallContext;
 
 import com.cloud.event.EventTypes;
 import com.cloud.exception.ResourceAllocationException;
+import com.cloud.user.Account;
 
 @APICommand(name = "createAffinityGroup", responseObject = AffinityGroupResponse.class, description = "Creates an affinity/anti-affinity group", entityType = {AffinityGroup.class},
         requestHasSensitiveInfo = false, responseHasSensitiveInfo = false)
@@ -111,12 +111,21 @@ public class CreateAffinityGroupCmd extends BaseAsyncCreateCmd {
 
     @Override
     public long getEntityOwnerId() {
-        Long accountId = _accountService.finalyzeAccountId(accountName, domainId, projectId, true);
-        if (accountId == null) {
-            return CallContext.current().getCallingAccount().getId();
+        Account caller = getCallingAccount();
+        // case where you want a domain level affinity group
+        if(domainId !=null && accountName == null && _accountService.isRootAdmin(caller.getAccountId())){
+            return caller.getAccountId();
         }
 
-        return accountId;
+        Account owner = _accountService.finalizeOwner(caller, accountName, domainId, projectId);
+        if (owner == null) {
+            return caller.getAccountId();
+        }
+        return owner.getAccountId();
+    }
+
+    private Account getCallingAccount() {
+        return CallContext.current().getCallingAccount();
     }
 
     @Override
@@ -133,7 +142,7 @@ public class CreateAffinityGroupCmd extends BaseAsyncCreateCmd {
 
     @Override
     public void create() throws ResourceAllocationException {
-        AffinityGroup result = _affinityGroupService.createAffinityGroup(accountName, projectId, domainId, affinityGroupName, affinityGroupType, description);
+        AffinityGroup result = _affinityGroupService.createAffinityGroup(this);
         if (result != null) {
             setEntityId(result.getId());
             setEntityUuid(result.getUuid());

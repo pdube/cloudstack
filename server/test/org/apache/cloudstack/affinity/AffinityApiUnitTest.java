@@ -35,6 +35,7 @@ import javax.naming.ConfigurationException;
 import com.cloud.utils.db.EntityManager;
 import com.cloud.event.ActionEventUtils;
 import com.cloud.user.User;
+
 import org.apache.cloudstack.affinity.dao.AffinityGroupDao;
 import org.apache.cloudstack.affinity.dao.AffinityGroupVMMapDao;
 import org.apache.cloudstack.test.utils.SpringUtils;
@@ -56,9 +57,9 @@ import org.springframework.core.type.filter.TypeFilter;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.support.AnnotationConfigContextLoader;
-
 import org.apache.cloudstack.acl.ControlledEntity;
 import org.apache.cloudstack.affinity.dao.AffinityGroupDomainMapDao;
+import org.apache.cloudstack.api.command.user.affinitygroup.CreateAffinityGroupCmd;
 import org.apache.cloudstack.context.CallContext;
 import org.apache.cloudstack.framework.config.dao.ConfigurationDao;
 import org.apache.cloudstack.framework.messagebus.MessageBus;
@@ -164,24 +165,36 @@ public class AffinityApiUnitTest {
         CallContext.unregister();
     }
 
+    private CreateAffinityGroupCmd getCreateAffinityGroupCmd(String accountName, Long domainId, String affinityGroupName, String affinityGroupType, String description){
+        CreateAffinityGroupCmd mockCreateAffinityGroupCmd = Mockito.mock(CreateAffinityGroupCmd.class);
+        when(mockCreateAffinityGroupCmd.getAccountName()).thenReturn(accountName);
+        when(mockCreateAffinityGroupCmd.getDomainId()).thenReturn(domainId);
+        when(mockCreateAffinityGroupCmd.getAffinityGroupName()).thenReturn(affinityGroupName);
+        when(mockCreateAffinityGroupCmd.getAffinityGroupType()).thenReturn(affinityGroupType);
+        when(mockCreateAffinityGroupCmd.getDescription()).thenReturn(description);
+        return mockCreateAffinityGroupCmd;
+    }
+
+    
     @Test
     public void createAffinityGroupTest() {
         when(_groupDao.isNameInUse(anyLong(), anyLong(), eq("group1"))).thenReturn(false);
-        AffinityGroup group = _affinityService.createAffinityGroup("user", null, domainId, "group1", "mock", "affinity group one");
+        AffinityGroup group = _affinityService.createAffinityGroup(getCreateAffinityGroupCmd("user", domainId, "group1", "mock", "affinity group one"));
         assertNotNull("Affinity group 'group1' of type 'mock' failed to create ", group);
 
     }
 
     @Test(expected = InvalidParameterValueException.class)
     public void invalidAffinityTypeTest() {
-        AffinityGroup group = _affinityService.createAffinityGroup("user", null, domainId, "group1", "invalid", "affinity group one");
+        AffinityGroup group = _affinityService.createAffinityGroup(getCreateAffinityGroupCmd("user", domainId, "group1", "invalid", "affinity group one"));
 
     }
 
     @Test(expected = InvalidParameterValueException.class)
     public void uniqueAffinityNameTest() {
         when(_groupDao.isNameInUse(anyLong(), anyLong(), eq("group1"))).thenReturn(true);
-        AffinityGroup group2 = _affinityService.createAffinityGroup("user", null, domainId, "group1", "mock", "affinity group two");
+        AffinityGroup group = _affinityService.createAffinityGroup(getCreateAffinityGroupCmd("user", domainId, "group1", "mock", "affinity group two"));
+
     }
 
     @Test(expected = InvalidParameterValueException.class)
@@ -192,8 +205,9 @@ public class AffinityApiUnitTest {
 
     @Test(expected = InvalidParameterValueException.class)
     public void deleteAffinityGroupInvalidIdName() throws ResourceInUseException {
-        when(_groupDao.findByAccountAndName(200L, "group1")).thenReturn(null);
-        _affinityService.deleteAffinityGroup(null, "user", null, domainId, "group1");
+        when(_groupDao.findByAccountAndName(200L, "invalid group")).thenReturn(null);
+        when(_acctMgr.finalyzeAccountId("user", domainId, null, true)).thenReturn(200L);
+        _affinityService.deleteAffinityGroup(null, "user", null, domainId, "invalid group");
     }
 
     @Test(expected = InvalidParameterValueException.class)

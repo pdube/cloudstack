@@ -18,6 +18,8 @@ package org.apache.cloudstack.affinity;
 
 import java.util.List;
 
+import org.apache.cloudstack.api.command.user.affinitygroup.CreateAffinityGroupCmd;
+
 import com.cloud.uservm.UserVm;
 
 public interface AffinityGroupService {
@@ -33,6 +35,7 @@ public interface AffinityGroupService {
      * @param description
      * @return AffinityGroup
      */
+    AffinityGroup createAffinityGroup(CreateAffinityGroupCmd createAffinityGroupCmd);
 
     AffinityGroup createAffinityGroup(String account, Long projectId, Long domainId, String affinityGroupName, String affinityGroupType, String description);
 
@@ -62,7 +65,5 @@ public interface AffinityGroupService {
     boolean isAdminControlledGroup(AffinityGroup group);
 
     boolean isAffinityGroupAvailableInDomain(long affinityGroupId, long domainId);
-
-    AffinityGroup createAffinityGroupInternal(String account, Long projectId, Long domainId, String affinityGroupName, String affinityGroupType, String description);
 
 }

@@ -1800,7 +1800,7 @@ public class ConfigurationManagerImpl extends ManagerBase implements Configurati
             }
         }
 
-        group = _affinityGroupService.createAffinityGroupInternal(accountName, null, domainId, affinityGroupName, "ExplicitDedication", "dedicated resources group");
+        group = _affinityGroupService.createAffinityGroup(accountName, null, domainId, affinityGroupName, "ExplicitDedication", "dedicated resources group");
 
         return group;
 
