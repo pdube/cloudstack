@@ -16,8 +16,6 @@
 // under the License.
 package org.apache.cloudstack.api.command.user.vm;
 
-import org.apache.cloudstack.acl.SecurityChecker.AccessType;
-import org.apache.cloudstack.api.ACL;
 import org.apache.cloudstack.api.APICommand;
 import org.apache.cloudstack.api.ApiConstants;
 import org.apache.cloudstack.api.BaseCmd;
@@ -37,12 +35,11 @@ import com.cloud.uservm.UserVm;
     requestHasSensitiveInfo = false,
     responseHasSensitiveInfo = false)
 public class GreetVirtualMachineCmd extends BaseCmd {
-    public static final Logger s_logger = Logger.getLogger(GreetVirtualMachineCmd.class.getName());
+    public static final Logger s_logger = Logger.getLogger(GreetVirtualMachineCmd.class);
 
     /////////////////////////////////////////////////////
     //////////////// API parameters /////////////////////
     /////////////////////////////////////////////////////
-    @ACL(accessType = AccessType.ListEntry)
     @Parameter(name=ApiConstants.ID, type=CommandType.UUID,required=true, description="The ID of the virtual machine")
     private Long id;
 
