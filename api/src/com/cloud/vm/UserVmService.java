@@ -482,4 +482,11 @@ public interface UserVmService {
      */
     public boolean isDisplayResourceEnabled(Long vmId);
 
+    /**
+     * Returns a greeting for a virtualMachine
+     * @param greetVirtualMachineCmd
+     * @return the greeting for the virtual machine
+     */
+    String getGreetingForVirtualMachine(Long virtualMachineId);
+
 }

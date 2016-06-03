@@ -5711,4 +5711,13 @@ public class UserVmManagerImpl extends ManagerBase implements UserVmManager, Vir
 
         return true; // no info then default to true
     }
+
+    @Override
+    public String getGreetingForVirtualMachine(Long virtualMachineId){
+        UserVm userVm = this.getUserVm(virtualMachineId);
+        if(userVm == null){
+            throw new InvalidParameterValueException("Unable to find virual machine with id " + virtualMachineId);
+        }
+        return String.format("Hello %s!", userVm.getDisplayName());
+    }
 }
